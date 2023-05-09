@@ -73,8 +73,7 @@ class UserChangeForm(BaseUserChangeForm):
             '<a href="{}" class="text-primary-600 underline whitespace-nowrap">this form</a>.'
         )
 
-        password = self.fields.get("password")
-        if password:
+        if password := self.fields.get("password"):
             password.help_text = password.help_text.format("../password/")
 
 

@@ -48,10 +48,7 @@ def action(
         inner.attrs = attrs or {}
         return inner
 
-    if function is None:
-        return decorator
-    else:
-        return decorator(function)
+    return decorator if function is None else decorator(function)
 
 
 def display(
@@ -85,7 +82,4 @@ def display(
 
         return func
 
-    if function is None:
-        return decorator
-    else:
-        return decorator(function)
+    return decorator if function is None else decorator(function)

@@ -16,7 +16,6 @@ class UnfoldModelAdminViewMixin(PermissionRequiredMixin):
                 "UnfoldModelAdminViewMixin was not provided with 'model_admin' argument"
             )
         model_admin = self.kwargs["model_admin"]
-        context_data = super().get_context_data(
+        return super().get_context_data(
             **kwargs, **model_admin.admin_site.each_context(self.request)
         )
-        return context_data

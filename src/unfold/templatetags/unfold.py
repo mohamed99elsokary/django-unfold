@@ -10,13 +10,14 @@ register = Library()
 
 @register.simple_tag(name="tab_list", takes_context=True)
 def tab_list(context, opts) -> str:
-    tabs = None
-
-    for tab in context.get("tab_list"):
-        if str(opts) in tab["models"]:
-            tabs = tab["items"]
-            break
-
+    tabs = next(
+        (
+            tab["items"]
+            for tab in context.get("tab_list")
+            if str(opts) in tab["models"]
+        ),
+        None,
+    )
     return render_to_string(
         "unfold/helpers/tab_list.html",
         request=context.request,
@@ -47,10 +48,7 @@ class CaptureNode(Node):
     def render(self, context: Dict[str, Any]) -> Union[str, SafeText]:
         output = self.nodelist.render(context)
         context[self.varname] = output
-        if self.silent:
-            return ""
-        else:
-            return output
+        return "" if self.silent else output
 
 
 @register.tag(name="capture")

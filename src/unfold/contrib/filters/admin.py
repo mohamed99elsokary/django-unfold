@@ -44,9 +44,7 @@ class SingleNumericFilter(admin.FieldListFilter):
 
         if not isinstance(field, (DecimalField, IntegerField, FloatField, AutoField)):
             raise TypeError(
-                "Class {} is not supported for {}.".format(
-                    type(self.field), self.__class__.__name__
-                )
+                f"Class {type(self.field)} is not supported for {self.__class__.__name__}."
             )
 
         self.request = request
@@ -88,37 +86,27 @@ class RangeNumericMixin:
     template = "unfold/filters/filters_numeric_range.html"
 
     def init_used_parameters(self, params: Dict[str, Any]) -> None:
-        if self.parameter_name + "_from" in params:
-            value = params.pop(self.parameter_name + "_from")
-            self.used_parameters[self.parameter_name + "_from"] = value
+        if f"{self.parameter_name}_from" in params:
+            value = params.pop(f"{self.parameter_name}_from")
+            self.used_parameters[f"{self.parameter_name}_from"] = value
 
-        if self.parameter_name + "_to" in params:
-            value = params.pop(self.parameter_name + "_to")
-            self.used_parameters[self.parameter_name + "_to"] = value
+        if f"{self.parameter_name}_to" in params:
+            value = params.pop(f"{self.parameter_name}_to")
+            self.used_parameters[f"{self.parameter_name}_to"] = value
 
     def queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
         filters = {}
 
-        value_from = self.used_parameters.get(self.parameter_name + "_from", None)
+        value_from = self.used_parameters.get(f"{self.parameter_name}_from", None)
         if value_from is not None and value_from != "":
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__gte": self.used_parameters.get(
-                        self.parameter_name + "_from", None
-                    ),
-                }
+            filters[f"{self.parameter_name}__gte"] = self.used_parameters.get(
+                f"{self.parameter_name}_from", None
             )
 
-        value_to = self.used_parameters.get(self.parameter_name + "_to", None)
+        value_to = self.used_parameters.get(f"{self.parameter_name}_to", None)
         if value_to is not None and value_to != "":
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__lte": self.used_parameters.get(
-                        self.parameter_name + "_to", None
-                    ),
-                }
+            filters[f"{self.parameter_name}__lte"] = self.used_parameters.get(
+                f"{self.parameter_name}_to", None
             )
 
         return queryset.filter(**filters)
@@ -139,11 +127,11 @@ class RangeNumericMixin:
                     data={
                         self.parameter_name
                         + "_from": self.used_parameters.get(
-                            self.parameter_name + "_from", None
+                            f"{self.parameter_name}_from", None
                         ),
                         self.parameter_name
                         + "_to": self.used_parameters.get(
-                            self.parameter_name + "_to", None
+                            f"{self.parameter_name}_to", None
                         ),
                     },
                 ),
@@ -185,9 +173,7 @@ class RangeNumericFilter(RangeNumericMixin, admin.FieldListFilter):
         super().__init__(field, request, params, model, model_admin, field_path)
         if not isinstance(field, (DecimalField, IntegerField, FloatField, AutoField)):
             raise TypeError(
-                "Class {} is not supported for {}.".format(
-                    type(self.field), self.__class__.__name__
-                )
+                f"Class {type(self.field)} is not supported for {self.__class__.__name__}."
             )
 
         self.request = request
@@ -246,21 +232,21 @@ class SliderNumericFilter(RangeNumericFilter):
                 "min": min_value,
                 "max": max_value,
                 "value_from": self.used_parameters.get(
-                    self.parameter_name + "_from", min_value
+                    f"{self.parameter_name}_from", min_value
                 ),
                 "value_to": self.used_parameters.get(
-                    self.parameter_name + "_to", max_value
+                    f"{self.parameter_name}_to", max_value
                 ),
                 "form": self.form_class(
                     name=self.parameter_name,
                     data={
                         self.parameter_name
                         + "_from": self.used_parameters.get(
-                            self.parameter_name + "_from", min_value
+                            f"{self.parameter_name}_from", min_value
                         ),
                         self.parameter_name
                         + "_to": self.used_parameters.get(
-                            self.parameter_name + "_to", max_value
+                            f"{self.parameter_name}_to", max_value
                         ),
                     },
                 ),
@@ -269,7 +255,7 @@ class SliderNumericFilter(RangeNumericFilter):
 
     def _get_min_step(self, precision: int) -> float:
         result_format = f"{{:.{precision - 1}f}}"
-        return float(result_format.format(0) + "1")
+        return float(f"{result_format.format(0)}1")
 
 
 class RangeDateFilter(admin.FieldListFilter):
@@ -290,46 +276,34 @@ class RangeDateFilter(admin.FieldListFilter):
         super().__init__(field, request, params, model, model_admin, field_path)
         if not isinstance(field, DateField):
             raise TypeError(
-                "Class {} is not supported for {}.".format(
-                    type(self.field), self.__class__.__name__
-                )
+                f"Class {type(self.field)} is not supported for {self.__class__.__name__}."
             )
 
         self.request = request
         if self.parameter_name is None:
             self.parameter_name = self.field_path
 
-        if self.parameter_name + "_from" in params:
-            value = params.pop(self.field_path + "_from")
-            self.used_parameters[self.field_path + "_from"] = value
+        if f"{self.parameter_name}_from" in params:
+            value = params.pop(f"{self.field_path}_from")
+            self.used_parameters[f"{self.field_path}_from"] = value
 
-        if self.parameter_name + "_to" in params:
-            value = params.pop(self.field_path + "_to")
-            self.used_parameters[self.field_path + "_to"] = value
+        if f"{self.parameter_name}_to" in params:
+            value = params.pop(f"{self.field_path}_to")
+            self.used_parameters[f"{self.field_path}_to"] = value
 
     def queryset(self, request: HttpRequest, queryset: QuerySet) -> QuerySet:
         filters = {}
 
-        value_from = self.used_parameters.get(self.parameter_name + "_from", None)
+        value_from = self.used_parameters.get(f"{self.parameter_name}_from", None)
         if value_from not in EMPTY_VALUES:
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__gte": self.used_parameters.get(
-                        self.parameter_name + "_from", None
-                    ),
-                }
+            filters[f"{self.parameter_name}__gte"] = self.used_parameters.get(
+                f"{self.parameter_name}_from", None
             )
 
-        value_to = self.used_parameters.get(self.parameter_name + "_to", None)
+        value_to = self.used_parameters.get(f"{self.parameter_name}_to", None)
         if value_to not in EMPTY_VALUES:
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__lte": self.used_parameters.get(
-                        self.parameter_name + "_to", None
-                    ),
-                }
+            filters[f"{self.parameter_name}__lte"] = self.used_parameters.get(
+                f"{self.parameter_name}_to", None
             )
 
         return queryset.filter(**filters)
@@ -350,11 +324,11 @@ class RangeDateFilter(admin.FieldListFilter):
                     data={
                         self.parameter_name
                         + "_from": self.used_parameters.get(
-                            self.parameter_name + "_from", None
+                            f"{self.parameter_name}_from", None
                         ),
                         self.parameter_name
                         + "_to": self.used_parameters.get(
-                            self.parameter_name + "_to", None
+                            f"{self.parameter_name}_to", None
                         ),
                     },
                 ),
@@ -380,30 +354,28 @@ class RangeDateTimeFilter(admin.FieldListFilter):
         super().__init__(field, request, params, model, model_admin, field_path)
         if not isinstance(field, DateTimeField):
             raise TypeError(
-                "Class {} is not supported for {}.".format(
-                    type(self.field), self.__class__.__name__
-                )
+                f"Class {type(self.field)} is not supported for {self.__class__.__name__}."
             )
 
         self.request = request
         if self.parameter_name is None:
             self.parameter_name = self.field_path
 
-        if self.parameter_name + "_from_0" in params:
-            value = params.pop(self.field_path + "_from_0")
-            self.used_parameters[self.field_path + "_from_0"] = value
+        if f"{self.parameter_name}_from_0" in params:
+            value = params.pop(f"{self.field_path}_from_0")
+            self.used_parameters[f"{self.field_path}_from_0"] = value
 
-        if self.parameter_name + "_from_1" in params:
-            value = params.pop(self.field_path + "_from_1")
-            self.used_parameters[self.field_path + "_from_1"] = value
+        if f"{self.parameter_name}_from_1" in params:
+            value = params.pop(f"{self.field_path}_from_1")
+            self.used_parameters[f"{self.field_path}_from_1"] = value
 
-        if self.parameter_name + "_to_0" in params:
-            value = params.pop(self.field_path + "_to_0")
-            self.used_parameters[self.field_path + "_to_0"] = value
+        if f"{self.parameter_name}_to_0" in params:
+            value = params.pop(f"{self.field_path}_to_0")
+            self.used_parameters[f"{self.field_path}_to_0"] = value
 
-        if self.parameter_name + "_to_1" in params:
-            value = params.pop(self.field_path + "_to_1")
-            self.used_parameters[self.field_path + "_to_1"] = value
+        if f"{self.parameter_name}_to_1" in params:
+            value = params.pop(f"{self.field_path}_to_1")
+            self.used_parameters[f"{self.field_path}_to_1"] = value
 
     def expected_parameters(self) -> List[str]:
         return [
@@ -417,30 +389,22 @@ class RangeDateTimeFilter(admin.FieldListFilter):
         filters = {}
 
         date_value_from = self.used_parameters.get(
-            self.parameter_name + "_from_0", None
+            f"{self.parameter_name}_from_0", None
         )
         time_value_from = self.used_parameters.get(
-            self.parameter_name + "_from_1", None
+            f"{self.parameter_name}_from_1", None
         )
-        date_value_to = self.used_parameters.get(self.parameter_name + "_to_0", None)
-        time_value_to = self.used_parameters.get(self.parameter_name + "_to_1", None)
+        date_value_to = self.used_parameters.get(f"{self.parameter_name}_to_0", None)
+        time_value_to = self.used_parameters.get(f"{self.parameter_name}_to_1", None)
 
         if date_value_from not in EMPTY_VALUES and time_value_from not in EMPTY_VALUES:
-            filters.update(
-                {
-                    f"{self.parameter_name}__gte": parse_datetime(
-                        f"{date_value_from}T{time_value_from}"
-                    ),
-                }
+            filters[f"{self.parameter_name}__gte"] = parse_datetime(
+                f"{date_value_from}T{time_value_from}"
             )
 
         if date_value_to not in EMPTY_VALUES and time_value_to not in EMPTY_VALUES:
-            filters.update(
-                {
-                    f"{self.parameter_name}__lte": parse_datetime(
-                        f"{date_value_to}T{time_value_to}"
-                    ),
-                }
+            filters[f"{self.parameter_name}__lte"] = parse_datetime(
+                f"{date_value_to}T{time_value_to}"
             )
 
         return queryset.filter(**filters)
@@ -455,19 +419,19 @@ class RangeDateTimeFilter(admin.FieldListFilter):
                     data={
                         self.parameter_name
                         + "_from_0": self.used_parameters.get(
-                            self.parameter_name + "_from_0", None
+                            f"{self.parameter_name}_from_0", None
                         ),
                         self.parameter_name
                         + "_from_1": self.used_parameters.get(
-                            self.parameter_name + "_from_1", None
+                            f"{self.parameter_name}_from_1", None
                         ),
                         self.parameter_name
                         + "_to_0": self.used_parameters.get(
-                            self.parameter_name + "_to_0", None
+                            f"{self.parameter_name}_to_0", None
                         ),
                         self.parameter_name
                         + "_to_1": self.used_parameters.get(
-                            self.parameter_name + "_to_1", None
+                            f"{self.parameter_name}_to_1", None
                         ),
                     },
                 ),

@@ -100,21 +100,17 @@ FORMFIELD_OVERRIDES = {
 }
 
 if HAS_PSYCOPG:
-    FORMFIELD_OVERRIDES.update(
-        {
-            ArrayField: {"widget": UnfoldAdminTextareaWidget},
-            SearchVectorField: {"widget": UnfoldAdminTextareaWidget},
-            IntegerRangeField: {"widget": UnfoldAdminIntegerRangeWidget},
-        }
-    )
+    FORMFIELD_OVERRIDES |= {
+        ArrayField: {"widget": UnfoldAdminTextareaWidget},
+        SearchVectorField: {"widget": UnfoldAdminTextareaWidget},
+        IntegerRangeField: {"widget": UnfoldAdminIntegerRangeWidget},
+    }
 
 FORMFIELD_OVERRIDES_INLINE = copy.deepcopy(FORMFIELD_OVERRIDES)
 
-FORMFIELD_OVERRIDES_INLINE.update(
-    {
-        models.ImageField: {"widget": UnfoldAdminImageSmallFieldWidget},
-    }
-)
+FORMFIELD_OVERRIDES_INLINE[models.ImageField] = {
+    "widget": UnfoldAdminImageSmallFieldWidget
+}
 
 
 class UnfoldAdminField(helpers.AdminField):
@@ -200,10 +196,7 @@ class UnfoldAdminReadonlyField(helpers.AdminReadonlyField):
                 if getattr(attr, "boolean", False):
                     result_repr = _boolean_icon(value)
                 else:
-                    if hasattr(value, "__html__"):
-                        result_repr = value
-                    else:
-                        result_repr = linebreaksbr(value)
+                    result_repr = value if hasattr(value, "__html__") else linebreaksbr(value)
             else:
                 if isinstance(f.remote_field, ManyToManyRel) and value is not None:
                     result_repr = ", ".join(map(str, value.all()))
@@ -282,11 +275,10 @@ class ModelAdminMixin:
         request: HttpRequest,
         **kwargs,
     ) -> ModelMultipleChoiceField:
-        if "widget" not in kwargs:
-            if db_field.name in self.raw_id_fields:
-                kwargs["widget"] = forms.TextInput(
-                    attrs={"class": " ".join(INPUT_CLASSES)}
-                )
+        if "widget" not in kwargs and db_field.name in self.raw_id_fields:
+            kwargs["widget"] = forms.TextInput(
+                attrs={"class": " ".join(INPUT_CLASSES)}
+            )
 
         form_field = super().formfield_for_manytomany(db_field, request, **kwargs)
 
@@ -361,7 +353,7 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
                 filtered_actions.append(action)
                 continue
             permission_checks = (
-                getattr(self, "has_%s_permission" % permission)
+                getattr(self, f"has_{permission}_permission")
                 for permission in action.method.allowed_permissions
             )
             if any(has_permission(request) for has_permission in permission_checks):
@@ -494,17 +486,16 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
 
         actions = []
         if object_id:
-            for action in self.get_actions_detail(request):
-                actions.append(
-                    {
-                        "title": action.description,
-                        "attrs": action.method.attrs,
-                        "path": reverse(
-                            f"admin:{action.action_name}", args=(object_id,)
-                        ),
-                    }
-                )
-
+            actions.extend(
+                {
+                    "title": action.description,
+                    "attrs": action.method.attrs,
+                    "path": reverse(
+                        f"admin:{action.action_name}", args=(object_id,)
+                    ),
+                }
+                for action in self.get_actions_detail(request)
+            )
         extra_context.update(
             {
                 "actions_submit_line": self.get_actions_submit_line(request),
@@ -610,17 +601,13 @@ class ModelAdmin(ModelAdminMixin, BaseModelAdmin):
 
     def response_change(self, request: HttpRequest, obj: Model) -> HttpResponse:
         res = super().response_change(request, obj)
-        if "next" in request.GET:
-            return redirect(request.GET["next"])
-        return res
+        return redirect(request.GET["next"]) if "next" in request.GET else res
 
     def response_add(
         self, request: HttpRequest, obj: Model, post_url_continue: Optional[str] = None
     ) -> HttpResponse:
         res = super().response_add(request, obj, post_url_continue)
-        if "next" in request.GET:
-            return redirect(request.GET["next"])
-        return res
+        return redirect(request.GET["next"]) if "next" in request.GET else res
 
 
 class TabularInline(ModelAdminMixin, BaseTabularInline):

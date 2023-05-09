@@ -34,7 +34,7 @@ class UnfoldAdminSite(AdminSite):
             self.site_url = get_config(self.settings_name)["SITE_URL"]
 
     def get_urls(self) -> List[URLPattern]:
-        urlpatterns = [
+        return [
             path("search/", self.admin_view(self.search), name="search"),
             path(
                 "toggle-sidebar/",
@@ -42,8 +42,6 @@ class UnfoldAdminSite(AdminSite):
                 name="toggle_sidebar",
             ),
         ] + super().get_urls()
-
-        return urlpatterns
 
     def each_context(self, request: HttpRequest) -> Dict[str, Any]:
         context = super().each_context(request)
@@ -133,13 +131,9 @@ class UnfoldAdminSite(AdminSite):
                 results.append(app)
                 continue
 
-            models = []
-
-            for model in app["models"]:
-                if query in model["name"].lower():
-                    models.append(model)
-
-            if len(models) > 0:
+            if models := [
+                model for model in app["models"] if query in model["name"].lower()
+            ]:
                 app["models"] = models
                 results.append(app)
 
@@ -199,7 +193,7 @@ class UnfoldAdminSite(AdminSite):
 
         def _get_is_active(link: str) -> bool:
             if not isinstance(link, str):
-                link = str(link)
+                link = link
 
             if link in request.path and link != reverse_lazy("admin:index"):
                 return True
@@ -246,10 +240,7 @@ class UnfoldAdminSite(AdminSite):
         if instance is None:
             return None
 
-        if isinstance(instance, str):
-            return instance
-
-        return instance(*args)
+        return instance if isinstance(instance, str) else instance(*args)
 
     def _replace_values(self, target: Dict, source: Dict, request: HttpRequest):
         for key in source.keys():
