@@ -127,9 +127,7 @@ class UnfoldAdminIntegerRangeWidget(MultiWidget):
         super().__init__(_widgets, attrs)
 
     def decompress(self, value: Union[str, None]) -> Tuple[Optional[Callable], ...]:
-        if value:
-            return value.lower, value.upper
-        return None, None
+        return (value.lower, value.upper) if value else (None, None)
 
 
 class UnfoldAdminEmailInputWidget(AdminEmailInputWidget):

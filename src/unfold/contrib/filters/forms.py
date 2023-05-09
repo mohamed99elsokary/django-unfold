@@ -25,14 +25,14 @@ class RangeNumericForm(forms.Form):
         self.name = kwargs.pop("name")
         super().__init__(*args, **kwargs)
 
-        self.fields[self.name + "_from"] = forms.FloatField(
+        self.fields[f"{self.name}_from"] = forms.FloatField(
             label="",
             required=False,
             widget=forms.NumberInput(
                 attrs={"placeholder": _("From"), "class": " ".join(INPUT_CLASSES)}
             ),
         )
-        self.fields[self.name + "_to"] = forms.FloatField(
+        self.fields[f"{self.name}_to"] = forms.FloatField(
             label="",
             required=False,
             widget=forms.NumberInput(
@@ -64,7 +64,7 @@ class RangeDateForm(forms.Form):
         self.name = kwargs.pop("name")
         super().__init__(*args, **kwargs)
 
-        self.fields[self.name + "_from"] = forms.DateField(
+        self.fields[f"{self.name}_from"] = forms.DateField(
             label="",
             required=False,
             widget=forms.DateInput(
@@ -74,7 +74,7 @@ class RangeDateForm(forms.Form):
                 }
             ),
         )
-        self.fields[self.name + "_to"] = forms.DateField(
+        self.fields[f"{self.name}_to"] = forms.DateField(
             label="",
             required=False,
             widget=forms.DateInput(
@@ -99,7 +99,7 @@ class RangeDateTimeForm(forms.Form):
         self.name = kwargs.pop("name")
         super().__init__(*args, **kwargs)
 
-        self.fields[self.name + "_from"] = forms.SplitDateTimeField(
+        self.fields[f"{self.name}_from"] = forms.SplitDateTimeField(
             label="",
             required=False,
             widget=UnfoldAdminSplitDateTimeVerticalWidget(
@@ -115,7 +115,7 @@ class RangeDateTimeForm(forms.Form):
                 },
             ),
         )
-        self.fields[self.name + "_to"] = forms.SplitDateTimeField(
+        self.fields[f"{self.name}_to"] = forms.SplitDateTimeField(
             label="",
             required=False,
             widget=UnfoldAdminSplitDateTimeVerticalWidget(

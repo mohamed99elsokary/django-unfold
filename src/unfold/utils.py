@@ -18,23 +18,21 @@ def _boolean_icon(field_val: Any) -> str:
 
 
 def display_for_header(value: Iterable, empty_value_display: str) -> SafeText:
-    if not isinstance(value, list) and not isinstance(value, tuple):
-        raise UnfoldException("Display header requires list or tuple")
-
-    return mark_safe(
-        render_to_string(
-            "unfold/helpers/display_header.html",
-            {
-                "value": value,
-            },
+    if isinstance(value, (list, tuple)):
+        return mark_safe(
+            render_to_string(
+                "unfold/helpers/display_header.html",
+                {
+                    "value": value,
+                },
+            )
         )
-    )
+    else:
+        raise UnfoldException("Display header requires list or tuple")
 
 
 def display_for_label(value: Any, empty_value_display: str, label: Any) -> SafeText:
     label_type = None
-    multiple = False
-
     if isinstance(label, dict):
         if isinstance(value, tuple):
             try:
@@ -45,9 +43,7 @@ def display_for_label(value: Any, empty_value_display: str, label: Any) -> SafeT
         elif value in label:
             label_type = label[value]
 
-    if isinstance(value, tuple) or isinstance(value, list):
-        multiple = True
-
+    multiple = isinstance(value, (tuple, list))
     return mark_safe(
         render_to_string(
             "unfold/helpers/display_label.html",

@@ -53,7 +53,7 @@ def items_for_result(cl: ChangeList, result: HttpRequest, form) -> SafeText:
     for field_index, field_name in enumerate(cl.list_display):
         empty_value_display = cl.model_admin.get_empty_value_display()
         row_classes = [
-            "field-%s" % _coerce_field_name(field_name, field_index),
+            f"field-{_coerce_field_name(field_name, field_index)}",
             "align-middle",
             "flex",
             "border-t",
@@ -122,17 +122,14 @@ def items_for_result(cl: ChangeList, result: HttpRequest, form) -> SafeText:
             else:
                 if isinstance(f.remote_field, models.ManyToOneRel):
                     field_val = getattr(result, f.name)
-                    if field_val is None:
-                        result_repr = empty_value_display
-                    else:
-                        result_repr = field_val
+                    result_repr = empty_value_display if field_val is None else field_val
                 else:
                     result_repr = display_for_field(value, f, empty_value_display)
                 if isinstance(
                     f, (models.DateField, models.TimeField, models.ForeignKey)
                 ):
                     row_classes.append("nowrap")
-        row_class = mark_safe(' class="%s"' % " ".join(row_classes))
+        row_class = mark_safe(f' class="{" ".join(row_classes)}"')
         # If list_display_links not defined, add the link tag to the first field
 
         if link_in_col(first, field_name, cl):
@@ -151,10 +148,7 @@ def items_for_result(cl: ChangeList, result: HttpRequest, form) -> SafeText:
                 )
                 # Convert the pk to something that can be used in Javascript.
                 # Problem cases are non-ASCII strings.
-                if cl.to_field:
-                    attr = str(cl.to_field)
-                else:
-                    attr = pk
+                attr = str(cl.to_field) if cl.to_field else pk
                 value = result.serializable_value(attr)
                 link_or_text = format_html(
                     '<a href="{}" class="{}" {}>{}</a>',
@@ -234,10 +228,7 @@ def result_list(context: Dict[str, Any], cl: ChangeList) -> Dict[str, Any]:
     Display the headers and data list together.
     """
     headers = list(result_headers(cl))
-    num_sorted_fields = 0
-    for h in headers:
-        if h["sortable"] and h["sorted"]:
-            num_sorted_fields += 1
+    num_sorted_fields = sum(1 for h in headers if h["sortable"] and h["sorted"])
     return {
         "cl": cl,
         "result_hidden_fields": list(result_hidden_fields(cl)),
